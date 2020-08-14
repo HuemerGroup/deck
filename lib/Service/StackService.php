@@ -44,7 +44,6 @@ use Symfony\Component\EventDispatcher\EventDispatcherInterface;
 use Symfony\Component\EventDispatcher\GenericEvent;
 use OCP\IL10N;
 use OCA\Deck\Event\FTSEvent;
-use OCA\Deck\Service\AssignmentService;
 
 class StackService {
 	private $stackMapper;
@@ -63,7 +62,6 @@ class StackService {
 	private $eventDispatcher;
 	private $changeHelper;
 	private $l10n;
-	private $assignmentService;
 
 	public function __construct(
 		StackMapper $stackMapper,
@@ -80,7 +78,6 @@ class StackService {
 		EventDispatcherInterface $eventDispatcher,
 		ChangeHelper $changeHelper,
 		IL10N $l10n,
-		AssignmentService $assignmentService
 	) {
 		$this->stackMapper = $stackMapper;
 		$this->boardMapper = $boardMapper;
@@ -96,7 +93,6 @@ class StackService {
 		$this->eventDispatcher = $eventDispatcher;
 		$this->changeHelper = $changeHelper;
 		$this->l10n = $l10n;
-		$this->assignmentService = $assignmentService;
 	}
 
 	private function enrichStackWithCards($stack, $since = -1) {
@@ -397,7 +393,6 @@ class StackService {
 		}
 
 		$this->permissionService->checkPermission(null, $boardId, Acl::PERMISSION_MANAGE);
-		$this->permissionService->checkPermission(null, $boardId, Acl::PERMISSION_READ);
 		if ($this->boardService->isArchived(null, $boardId)) {
 			throw new StatusException('Operation not allowed. This board is archived.');
 		}
@@ -472,7 +467,6 @@ class StackService {
 					$newUserArray[] = $assignment;
 				}
 				$newCard->setAssignedUsers($newUserArray);
-				$newCardArray[] = $newCard;
 
 			}
 
