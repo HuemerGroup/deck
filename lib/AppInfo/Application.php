@@ -37,15 +37,22 @@ use OCA\Deck\Db\CardMapper;
 use OCA\Deck\Middleware\DefaultBoardMiddleware;
 use OCA\Deck\Middleware\ExceptionMiddleware;
 use OCA\Deck\Notification\Notifier;
+use OCA\Deck\Search\DeckProvider;
 use OCA\Deck\Service\FullTextSearchService;
 use OCA\Deck\Service\PermissionService;
 use OCP\AppFramework\App;
+use OCP\AppFramework\Bootstrap\IBootContext;
+use OCP\AppFramework\Bootstrap\IBootstrap;
+use OCP\AppFramework\Bootstrap\IRegistrationContext;
 use OCP\Collaboration\Resources\IManager;
 use OCP\Collaboration\Resources\IProviderManager;
 use OCP\Comments\CommentsEntityEvent;
 use OCP\EventDispatcher\Event;
 use OCP\EventDispatcher\IEventDispatcher;
 use OCP\FullTextSearch\IFullTextSearchManager;
+use OCP\IConfig;
+use OCP\IContainer;
+use OCP\IDBConnection;
 use OCP\IGroup;
 use OCP\IServerContainer;
 use OCP\IUser;
@@ -53,7 +60,7 @@ use OCP\IUserManager;
 use OCP\IURLGenerator;
 use OCP\Util;
 
-class Application extends App {
+class Application extends App implements IBootstrap {
 	public const APP_ID = 'deck';
 
 	public const COMMENT_ENTITY_TYPE = 'deckCard';
@@ -68,46 +75,34 @@ class Application extends App {
 	private $fullTextSearchManager;
 
 	public function __construct(array $urlParams = []) {
-		parent::__construct('deck', $urlParams);
+		parent::__construct(self::APP_ID, $urlParams);
 
-		$container = $this->getContainer();
-		$server = $this->getContainer()->getServer();
-
-		$this->server = $server;
-
-		$container->registerCapability(Capabilities::class);
-		$container->registerMiddleWare(ExceptionMiddleware::class);
-		$container->registerMiddleWare(DefaultBoardMiddleware::class);
-
-		$container->registerService('databaseType', static function () use ($server) {
-			return $server->getConfig()->getSystemValue('dbtype', 'sqlite');
-		});
-		$container->registerService('database4ByteSupport', static function () use ($server) {
-			return $server->getDatabaseConnection()->supports4ByteText();
-		});
+		$this->server = \OC::$server;
 	}
 
-	public function register(): void {
-		$this->registerNavigationEntry();
+	public function boot(IBootContext $context): void {
+	}
+
+	public function register(IRegistrationContext $context): void {
+
+		$context->registerCapability(Capabilities::class);
+		$context->registerMiddleWare(ExceptionMiddleware::class);
+		$context->registerMiddleWare(DefaultBoardMiddleware::class);
+
+		$context->registerService('databaseType', static function (IContainer $c) {
+			return $c->get(IConfig::class)->getSystemValue('dbtype', 'sqlite');
+		});
+		$context->registerService('database4ByteSupport', static function (IContainer $c) {
+			return $c->get(IDBConnection::class)->supports4ByteText();
+		});
+
+		$context->registerSearchProvider(DeckProvider::class);
+
 		$this->registerUserGroupHooks();
 		$this->registerNotifications();
 		$this->registerCommentsEntity();
 		$this->registerFullTextSearch();
 		$this->registerCollaborationResources();
-	}
-
-	public function registerNavigationEntry(): void {
-		$container = $this->getContainer();
-		$this->server->getNavigationManager()->add(static function () use ($container) {
-			$urlGenerator = $container->query(IURLGenerator::class);
-			return [
-				'id' => 'deck',
-				'order' => 10,
-				'href' => $urlGenerator->linkToRoute('deck.page.index'),
-				'icon' => $urlGenerator->imagePath('deck', 'deck.svg'),
-				'name' => 'Deck',
-			];
-		});
 	}
 
 	private function registerUserGroupHooks(): void {
@@ -151,8 +146,7 @@ class Application extends App {
 		});
 	}
 
-	public function registerNotifications(): void {
-		$notificationManager = $this->server->getNotificationManager();
+	public function registerNotifications(\OCP\Notification\IManager $notificationManager): void {
 		$notificationManager->registerNotifierService(Notifier::class);
 	}
 
@@ -173,8 +167,6 @@ class Application extends App {
 		$this->registerCommentsEventHandler();
 	}
 
-	/**
-	 */
 	protected function registerCommentsEventHandler(): void {
 		$this->server->getCommentsManager()->registerEventHandler(function () {
 			return $this->getContainer()->query(CommentEventHandler::class);
@@ -183,10 +175,6 @@ class Application extends App {
 
 	protected function registerCollaborationResources(): void {
 		$version = OC_Util::getVersion()[0];
-		if ($version < 16) {
-			return;
-		}
-
 		/**
 		 * Register Collaboration ResourceProvider
 		 *
