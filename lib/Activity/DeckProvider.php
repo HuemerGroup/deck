@@ -180,30 +180,30 @@ class DeckProvider implements IProvider {
 	}
 
 	private function getIcon(IEvent $event) {
-		$event->setIcon($this->urlGenerator->getAbsoluteURL($this->urlGenerator->imagePath('deck', 'deck-dark.svg')));
+		$event->setIcon($this->urlGenerator->getAbsoluteURL($this->urlGenerator->imagePath('deck', 'deck-dark.png')));
 		if (strpos($event->getSubject(), '_update') !== false) {
-			$event->setIcon($this->urlGenerator->getAbsoluteURL($this->urlGenerator->imagePath('files', 'change.svg')));
+			$event->setIcon($this->urlGenerator->getAbsoluteURL($this->urlGenerator->imagePath('files', 'change.png')));
 		}
 		if (strpos($event->getSubject(), '_create') !== false) {
-			$event->setIcon($this->urlGenerator->getAbsoluteURL($this->urlGenerator->imagePath('files', 'add-color.svg')));
+			$event->setIcon($this->urlGenerator->getAbsoluteURL($this->urlGenerator->imagePath('files', 'add-color.png')));
 		}
 		if (strpos($event->getSubject(), '_delete') !== false) {
-			$event->setIcon($this->urlGenerator->getAbsoluteURL($this->urlGenerator->imagePath('files', 'delete-color.svg')));
+			$event->setIcon($this->urlGenerator->getAbsoluteURL($this->urlGenerator->imagePath('files', 'delete-color.png')));
 		}
 		if (strpos($event->getSubject(), 'archive') !== false) {
-			$event->setIcon($this->urlGenerator->getAbsoluteURL($this->urlGenerator->imagePath('deck', 'archive.svg')));
+			$event->setIcon($this->urlGenerator->getAbsoluteURL($this->urlGenerator->imagePath('deck', 'archive.png')));
 		}
 		if (strpos($event->getSubject(), '_restore') !== false) {
-			$event->setIcon($this->urlGenerator->getAbsoluteURL($this->urlGenerator->imagePath('core', 'actions/history.svg')));
+			$event->setIcon($this->urlGenerator->getAbsoluteURL($this->urlGenerator->imagePath('core', 'actions/history.png')));
 		}
 		if (strpos($event->getSubject(), 'attachment_') !== false) {
-			$event->setIcon($this->urlGenerator->getAbsoluteURL($this->urlGenerator->imagePath('core', 'places/files.svg')));
+			$event->setIcon($this->urlGenerator->getAbsoluteURL($this->urlGenerator->imagePath('core', 'places/files.png')));
 		}
 		if (strpos($event->getSubject(), 'comment_') !== false) {
-			$event->setIcon($this->urlGenerator->getAbsoluteURL($this->urlGenerator->imagePath('core', 'actions/comment.svg')));
+			$event->setIcon($this->urlGenerator->getAbsoluteURL($this->urlGenerator->imagePath('core', 'actions/comment.png')));
 		}
 		if (strpos($event->getSubject(), 'label_') !== false) {
-			$event->setIcon($this->urlGenerator->getAbsoluteURL($this->urlGenerator->imagePath('core', 'actions/tag.svg')));
+			$event->setIcon($this->urlGenerator->getAbsoluteURL($this->urlGenerator->imagePath('core', 'actions/tag.png')));
 		}
 		return $event;
 	}
